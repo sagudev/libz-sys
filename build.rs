@@ -7,6 +7,7 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=zng/cmake.rs");
     println!("cargo:rerun-if-changed=zng/cc.rs");
+    println!("cargo:warning=Run zlib build script");
 
     let host = env::var("HOST").unwrap();
     let target = env::var("TARGET").unwrap();
@@ -42,6 +43,7 @@ fn main() {
             .probe("zlib");
         match zlib {
             Ok(zlib) => {
+                println!("cargo:warning=pkgconfig zlib");
                 if !zlib.include_paths.is_empty() {
                     let paths = zlib
                         .include_paths
@@ -59,6 +61,7 @@ fn main() {
 
     if target.contains("windows") {
         if try_vcpkg() {
+            println!("cargo:warning=vcpkg zlib");
             return;
         }
     }
@@ -87,8 +90,11 @@ fn main() {
         || want_static
         || (cross_compiling && !target.contains("-apple-"))
     {
+        println!("cargo:warning=build zlib");
         return build_zlib(&mut cfg, &target);
     }
+
+    println!("cargo:warning=else zlib");
 
     // If we've gotten this far we're probably a pretty standard platform.
     // Almost all platforms here ship libz by default, but some don't have
